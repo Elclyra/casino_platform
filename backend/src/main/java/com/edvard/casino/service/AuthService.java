@@ -1,6 +1,6 @@
 package com.edvard.casino.service;
 
-import com.edvard.casino.dto.GuestAuthResponse;
+import com.edvard.casino.dto.GuestLoginResult;
 import com.edvard.casino.dto.WalletResponse;
 import com.edvard.casino.model.User;
 import com.edvard.casino.repository.UserRepository;
@@ -16,14 +16,16 @@ import java.util.UUID;
 public class AuthService {
     private WalletService walletService;
     private UserRepository userRepository;
+    private JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, WalletService walletService) {
+    public AuthService(UserRepository userRepository, WalletService walletService, JwtService jwtService) {
         this.walletService = walletService;
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
     @Transactional
-    public GuestAuthResponse createGuestUser() {
+    public GuestLoginResult createGuestUser() {
         String username = "Guest#" + UUID.randomUUID().toString().substring(0, 8);
         User user = new User();
         user.setUsername(username);
@@ -31,8 +33,10 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
+        String token = jwtService.generateToken(savedUser);
+
         WalletResponse savedWallet = walletService.createWallet(savedUser, BigDecimal.valueOf(1000), Currency.EUR);
 
-        return new GuestAuthResponse(savedUser.getId(), username, savedWallet.balance(), savedWallet.currency());
+        return new GuestLoginResult(savedUser.getId(), username, savedWallet.balance(), savedWallet.currency(), token);
     }
 }
