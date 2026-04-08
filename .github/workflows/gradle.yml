@@ -63,10 +63,6 @@ jobs:
     permissions:
       contents: write
 
-    defaults:
-      run:
-        working-directory: ./backend
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 25
@@ -74,6 +70,10 @@ jobs:
       with:
         java-version: '25'
         distribution: 'temurin'
+
+    - name: Make Gradle wrapper executable
+      working-directory: ./backend
+      run: chmod +x ./gradlew
 
     # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
     # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
